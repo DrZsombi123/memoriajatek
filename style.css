@@ -1,0 +1,95 @@
+:root {
+  --hatter: #f5efe2;
+  --szoveg: #1f2522;
+  --halvany: #66706a;
+  --kartya: #fffaf0;
+  --vonal: #1f2522;
+  --piros: #c5402d;
+  --zold: #2f7c68;
+  --kek: #2f5f8f;
+  --sarga: #d49a2a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--hatter);
+  color: var(--szoveg);
+  font-family: Arial, sans-serif;
+}
+
+.app-shell {
+  width: min(1100px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+
+.play-area,
+.info-panel {
+  border: 3px solid var(--vonal);
+  border-radius: 8px;
+  background: var(--kartya);
+  padding: 16px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+select,
+.primary-action,
+.secondary-action {
+  min-height: 42px;
+  border: 2px solid var(--vonal);
+  border-radius: 6px;
+  padding: 0 14px;
+  background: white;
+}
+
+.primary-action {
+  background: var(--piros);
+  color: white;
+  font-weight: bold;
+}
+
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.status-strip article {
+  border: 2px solid var(--vonal);
+  border-radius: 6px;
+  padding: 10px;
+  background: #f0dfbd;
+}
+
+.game-board {
+  --columns: 4;
+  display: grid;
+  grid-template-columns: repeat(var(--columns), 1fr);
+  gap: 10px;
+}
