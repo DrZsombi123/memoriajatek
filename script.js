@@ -52,3 +52,50 @@ function keveres(pakli) {
 
   return kevertPakli;
 }
+const tabla = document.getElementById('game-board');
+const nehezsegMezo = document.getElementById('difficulty-select');
+const ujJatekGomb = document.getElementById('new-game-button');
+
+ujJatekGomb.addEventListener('click', ujJatek);
+nehezsegMezo.addEventListener('change', ujJatek);
+
+ujJatek();
+
+function ujJatek() {
+  const nehezseg = nehezsegMezo.value;
+  const beallitas = nehezsegek[nehezseg];
+
+  kartyak = pakliKeszites(beallitas.parok);
+  tabla.style.setProperty('--columns', beallitas.oszlopok);
+
+  kartyaMegjelenites();
+}
+
+function kartyaMegjelenites() {
+  tabla.innerHTML = '';
+
+  kartyak.forEach((kartya) => {
+    const gomb = document.createElement('button');
+    gomb.className = 'memory-card';
+    gomb.type = 'button';
+
+    const hatlap = document.createElement('span');
+    hatlap.className = 'card-face card-back';
+    hatlap.textContent = '?';
+
+    const elolap = document.createElement('span');
+    elolap.className = 'card-face card-front';
+
+    const jel = document.createElement('span');
+    jel.className = 'card-symbol';
+    jel.textContent = kartya.jel;
+
+    const nev = document.createElement('span');
+    nev.className = 'card-label';
+    nev.textContent = kartya.nev;
+
+    elolap.append(jel, nev);
+    gomb.append(hatlap, elolap);
+    tabla.append(gomb);
+  });
+}
