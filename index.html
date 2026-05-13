@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <main class="game-layout">
+  <section class="play-area" aria-labelledby="board-title">
+    <div class="toolbar" aria-label="Játék beállítások">
+      <label class="field">
+        <span>Nehézség</span>
+        <select id="difficulty-select">
+          <option value="easy">Könnyű - 6 pár</option>
+          <option value="medium">Közepes - 8 pár</option>
+          <option value="hard">Nehéz - 10 pár</option>
+        </select>
+      </label>
+
+      <button class="primary-action" id="new-game-button" type="button">
+        Új játék
+      </button>
+
+      <button class="secondary-action" id="reset-score-button" type="button">
+        Rekord törlése
+      </button>
+    </div>
+
+    <div class="status-strip" aria-live="polite">
+      <article>
+        <span>Lépések</span>
+        <strong id="moves-value">0</strong>
+      </article>
+      <article>
+        <span>Idő</span>
+        <strong id="time-value">00:00</strong>
+      </article>
+      <article>
+        <span>Párok</span>
+        <strong id="matches-value">0 / 6</strong>
+      </article>
+      <article>
+        <span>Rekord</span>
+        <strong id="best-score-value">Nincs</strong>
+      </article>
+    </div>
+
+    <h2 id="board-title" class="visually-hidden">Játéktábla</h2>
+    <div class="game-board" id="game-board" aria-label="Memóriakártyák"></div>
+  </section>
+
+  <aside class="info-panel" aria-labelledby="info-title">
+    <h2 id="info-title">Pontozás</h2>
+    <p>
+      A rekord először a kevesebb lépést nézi, döntetlen esetén pedig a
+      gyorsabb időt. Az eredmények LocalStorage-ban maradnak meg.
+    </p>
+
+    <dl class="rules-list">
+      <div>
+        <dt>1.</dt>
+        <dd>Kattints két kártyára.</dd>
+      </div>
+      <div>
+        <dt>2.</dt>
+        <dd>Ha egyeznek, felfordítva maradnak.</dd>
+      </div>
+      <div>
+        <dt>3.</dt>
+        <dd>Találd meg az összes párt.</dd>
+      </div>
+    </dl>
+  </aside>
+</main>
+
+<dialog class="result-dialog" id="result-dialog">
+  <div class="dialog-content">
+    <p class="eyebrow">Győzelem</p>
+    <h2>Megtaláltad az összes párt!</h2>
+    <p id="result-summary"></p>
+    <button class="primary-action" id="play-again-button" type="button">
+      Új kör
+    </button>
+  </div>
+</dialog>
+    
+</body>
+</html>
