@@ -93,3 +93,71 @@ select,
   grid-template-columns: repeat(var(--columns), 1fr);
   gap: 10px;
 }
+.memory-card {
+  position: relative;
+  min-height: 110px;
+  border: 2px solid var(--vonal);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.memory-card:disabled {
+  cursor: default;
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  backface-visibility: hidden;
+  transition: transform 0.25s;
+}
+
+.card-back {
+  background: var(--kek);
+  color: white;
+  font-size: 34px;
+  font-weight: bold;
+}
+
+.card-front {
+  background: #ffffff;
+  color: var(--szoveg);
+  border: 3px solid var(--zold);
+  transform: rotateY(180deg);
+}
+
+.memory-card.is-flipped .card-back,
+.memory-card.is-matched .card-back {
+  transform: rotateY(180deg);
+}
+
+.memory-card.is-flipped .card-front,
+.memory-card.is-matched .card-front {
+  transform: rotateY(0);
+}
+
+.card-symbol {
+  display: block;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.card-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+@media (max-width: 800px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .status-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
