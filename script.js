@@ -69,6 +69,12 @@ function ujJatek() {
   tabla.style.setProperty('--columns', beallitas.oszlopok);
 
   kartyaMegjelenites();
+  idoMegallitas();
+lepesek = 0;
+talalatok = 0;
+masodpercek = 0;
+elindult = false;
+felforditottKartyak = [];
 }
 
 function kartyaMegjelenites() {
@@ -128,6 +134,11 @@ function kartyaOsztaly(kartya) {
 }
 
 function kartyaKattintas(kartya) {
+  if (!elindult) {
+  idoInditas();
+  elindult = true;
+}
+
   if (zarolva || kartya.felforditva || kartya.megtalalva) {
     return;
   }
@@ -170,4 +181,41 @@ function parEllenorzes() {
     zarolva = false;
     kartyaMegjelenites();
   }, 750);
+}
+
+const lepesElem = document.getElementById('moves-value');
+const idoElem = document.getElementById('time-value');
+const parElem = document.getElementById('matches-value');
+
+let masodpercek = 0;
+let idoId = null;
+let elindult = false;
+
+function idoInditas() {
+  idoMegallitas();
+
+  idoId = setInterval(() => {
+    masodpercek++;
+    statisztikaFrissites();
+  }, 1000);
+}
+
+function idoMegallitas() {
+  clearInterval(idoId);
+  idoId = null;
+}
+
+function statisztikaFrissites() {
+  const nehezseg = nehezsegMezo.value;
+  const parokSzama = nehezsegek[nehezseg].parok;
+
+  lepesElem.textContent = lepesek;
+  idoElem.textContent = idoFormazas(masodpercek);
+  parElem.textContent = `${talalatok} / ${parokSzama}`;
+}
+
+function idoFormazas(osszMasodperc) {
+  const perc = Math.floor(osszMasodperc / 60).toString().padStart(2, '0');
+  const masodperc = (osszMasodperc % 60).toString().padStart(2, '0');
+  return `${perc}:${masodperc}`;
 }
