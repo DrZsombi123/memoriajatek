@@ -97,5 +97,77 @@ function kartyaMegjelenites() {
     elolap.append(jel, nev);
     gomb.append(hatlap, elolap);
     tabla.append(gomb);
+
+    const lathato = kartya.felforditva || kartya.megtalalva;
+
+gomb.className = kartyaOsztaly(kartya);
+gomb.disabled = zarolva || kartya.megtalalva;
+gomb.setAttribute('aria-pressed', String(lathato));
+gomb.setAttribute('aria-label', lathato ? `${kartya.nev} kártya` : 'Lefordított kártya');
+gomb.addEventListener('click', () => kartyaKattintas(kartya));
   });
+}
+
+let felforditottKartyak = [];
+let lepesek = 0;
+let talalatok = 0;
+let zarolva = false;
+
+function kartyaOsztaly(kartya) {
+  let osztaly = 'memory-card';
+
+  if (kartya.felforditva || kartya.megtalalva) {
+    osztaly += ' is-flipped';
+  }
+
+  if (kartya.megtalalva) {
+    osztaly += ' is-matched';
+  }
+
+  return osztaly;
+}
+
+function kartyaKattintas(kartya) {
+  if (zarolva || kartya.felforditva || kartya.megtalalva) {
+    return;
+  }
+
+  kartya.felforditva = true;
+  felforditottKartyak.push(kartya);
+  kartyaMegjelenites();
+
+  if (felforditottKartyak.length === 2) {
+    parEllenorzes();
+  }
+}
+
+function parEllenorzes() {
+  const elsoKartya = felforditottKartyak[0];
+  const masodikKartya = felforditottKartyak[1];
+
+  lepesek++;
+  zarolva = true;
+
+  if (elsoKartya.temaId === masodikKartya.temaId) {
+    elsoKartya.megtalalva = true;
+    masodikKartya.megtalalva = true;
+    talalatok++;
+    felforditottKartyak = [];
+    zarolva = false;
+    kartyaMegjelenites();
+    statisztikaFrissites();
+    jatekVegeEllenorzes();
+    return;
+  }
+
+  statisztikaFrissites();
+  kartyaMegjelenites();
+
+  setTimeout(() => {
+    elsoKartya.felforditva = false;
+    masodikKartya.felforditva = false;
+    felforditottKartyak = [];
+    zarolva = false;
+    kartyaMegjelenites();
+  }, 750);
 }
