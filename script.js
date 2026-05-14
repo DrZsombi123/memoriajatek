@@ -212,10 +212,85 @@ function statisztikaFrissites() {
   lepesElem.textContent = lepesek;
   idoElem.textContent = idoFormazas(masodpercek);
   parElem.textContent = `${talalatok} / ${parokSzama}`;
+
+  const rekord = rekordBetoltes()[nehezseg];
+rekordElem.textContent = rekord ? `${rekord.lepesek} lépés · ${idoFormazas(rekord.masodpercek)}` : 'Nincs';
+rekordTorlesGomb.disabled = !rekord;
 }
 
 function idoFormazas(osszMasodperc) {
   const perc = Math.floor(osszMasodperc / 60).toString().padStart(2, '0');
   const masodperc = (osszMasodperc % 60).toString().padStart(2, '0');
   return `${perc}:${masodperc}`;
+}
+
+const rekordTorlesGomb = document.getElementById('reset-score-button');
+const rekordElem = document.getElementById('best-score-value');
+const eredmenyAblak = document.getElementById('result-dialog');
+const eredmenySzoveg = document.getElementById('result-summary');
+const ujKorGomb = document.getElementById('play-again-button');
+
+rekordTorlesGomb.addEventListener('click', rekordTorles);
+ujKorGomb.addEventListener('click', ujJatek);
+
+function jatekVegeEllenorzes() {
+  const nehezseg = nehezsegMezo.value;
+  const parokSzama = nehezsegek[nehezseg].parok;
+
+  if (talalatok !== parokSzama) {
+    return;
+  }
+
+  idoMegallitas();
+
+  const eredmeny = {
+    lepesek,
+    masodpercek,
+  };
+  const ujRekord = rekordMentes(nehezseg, eredmeny);
+
+  statisztikaFrissites();
+  eredmenySzoveg.textContent = ujRekord
+    ? `Új rekord: ${lepesek} lépés, ${idoFormazas(masodpercek)} idő.`
+    : `Eredmény: ${lepesek} lépés, ${idoFormazas(masodpercek)} idő.`;
+  eredmenyAblak.showModal();
+}
+
+function rekordBetoltes() {
+  const mentettAdat = localStorage.getItem('memoryGameBestScores');
+  return mentettAdat ? JSON.parse(mentettAdat) : {};
+}
+
+function rekordMentes(nehezseg, eredmeny) {
+  const rekordok = rekordBetoltes();
+  const regiRekord = rekordok[nehezseg];
+
+  if (regiRekord && !jobbEredmeny(eredmeny, regiRekord)) {
+    return false;
+  }
+
+  rekordok[nehezseg] = eredmeny;
+  localStorage.setItem('memoryGameBestScores', JSON.stringify(rekordok));
+  return true;
+}
+
+function rekordTorles() {
+  const nehezseg = nehezsegMezo.value;
+  const rekordok = rekordBetoltes();
+
+  delete rekordok[nehezseg];
+  localStorage.setItem('memoryGameBestScores', JSON.stringify(rekordok));
+  statisztikaFrissites();
+}
+
+function jobbEredmeny(ujEredmeny, regiEredmeny) {
+  if (ujEredmeny.lepesek < regiEredmeny.lepesek) {
+    return true;
+  }
+
+  if (ujEredmeny.lepesek === regiEredmeny.lepesek) {
+    return ujEredmeny.masodpercek < regiEredmeny.masodpercek;
+  }
+
+  return false;
 }
