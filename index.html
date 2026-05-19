@@ -38,6 +38,14 @@
             <button class="secondary-action" id="reset-score-button" type="button">
               Rekord törlése
             </button>
+
+            <button class="secondary-action" id="pause-button" type="button" aria-pressed="false">
+              Szünet
+            </button>
+
+            <button class="secondary-action" id="hint-button" type="button">
+              Segítség
+            </button>
           </div>
 
           <div class="status-strip" aria-live="polite">
@@ -57,10 +65,19 @@
               <span>Rekord</span>
               <strong id="best-score-value">Nincs</strong>
             </article>
+            <article>
+              <span>Segítség</span>
+              <strong id="hints-value">3 / 3</strong>
+            </article>
           </div>
 
           <h2 id="board-title" class="visually-hidden">Játéktábla</h2>
-          <div class="game-board" id="game-board" aria-label="Memóriakártyák"></div>
+          <div class="board-wrap">
+            <div class="pause-overlay" id="pause-overlay" hidden>
+              <strong>Szünet</strong>
+            </div>
+            <div class="game-board" id="game-board" aria-label="Memóriakártyák"></div>
+          </div>
         </section>
 
         <aside class="info-panel" aria-labelledby="info-title">

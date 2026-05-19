@@ -17,15 +17,22 @@ const nehezsegek = {
   hard: { parok: 10, oszlopok: 5 },
 };
 
+const maxSegitsegek = 3;
+const segitsegIdotartam = 1200;
+
 const tabla = document.getElementById('game-board');
 const nehezsegMezo = document.getElementById('difficulty-select');
 const ujJatekGomb = document.getElementById('new-game-button');
 const rekordTorlesGomb = document.getElementById('reset-score-button');
+const szunetGomb = document.getElementById('pause-button');
+const segitsegGomb = document.getElementById('hint-button');
 const ujKorGomb = document.getElementById('play-again-button');
 const lepesElem = document.getElementById('moves-value');
 const idoElem = document.getElementById('time-value');
 const parElem = document.getElementById('matches-value');
 const rekordElem = document.getElementById('best-score-value');
+const segitsegElem = document.getElementById('hints-value');
+const szunetFedlap = document.getElementById('pause-overlay');
 const eredmenyAblak = document.getElementById('result-dialog');
 const eredmenySzoveg = document.getElementById('result-summary');
 
@@ -36,19 +43,26 @@ let talalatok = 0;
 let masodpercek = 0;
 let idoId = null;
 let visszaforditasId = null;
+let segitsegId = null;
 let zarolva = false;
 let elindult = false;
+let szunetelve = false;
+let segitsegekMaradtak = maxSegitsegek;
+let segitsegKartyaIds = [];
 
 ujJatekGomb.addEventListener('click', ujJatek);
 nehezsegMezo.addEventListener('change', ujJatek);
 ujKorGomb.addEventListener('click', ujJatek);
 rekordTorlesGomb.addEventListener('click', rekordTorles);
+szunetGomb.addEventListener('click', szunetValtas);
+segitsegGomb.addEventListener('click', segitsegMutatas);
 
 ujJatek();
 
 function ujJatek() {
   idoMegallitas();
   visszaforditasMegallitas();
+  segitsegMegallitas();
   eredmenyAblak.close();
 
   lepesek = 0;
@@ -56,6 +70,9 @@ function ujJatek() {
   masodpercek = 0;
   zarolva = false;
   elindult = false;
+  szunetelve = false;
+  segitsegekMaradtak = maxSegitsegek;
+  segitsegKartyaIds = [];
   felforditottKartyak = [];
 
   const nehezseg = nehezsegMezo.value;
@@ -107,11 +124,11 @@ function kartyaMegjelenites() {
 
   kartyak.forEach((kartya) => {
     const gomb = document.createElement('button');
-    const lathato = kartya.felforditva || kartya.megtalalva;
+    const lathato = kartyaLathato(kartya);
 
     gomb.className = kartyaOsztaly(kartya);
     gomb.type = 'button';
-    gomb.disabled = zarolva || kartya.megtalalva;
+    gomb.disabled = zarolva || szunetelve || kartya.megtalalva || segitsegKartyaIds.length > 0;
     gomb.setAttribute('aria-pressed', String(lathato));
     gomb.setAttribute('aria-label', lathato ? `${kartya.nev} kártya` : 'Lefordított kártya');
 
@@ -141,7 +158,7 @@ function kartyaMegjelenites() {
 function kartyaOsztaly(kartya) {
   let osztaly = 'memory-card';
 
-  if (kartya.felforditva || kartya.megtalalva) {
+  if (kartyaLathato(kartya)) {
     osztaly += ' is-flipped';
   }
 
@@ -149,11 +166,19 @@ function kartyaOsztaly(kartya) {
     osztaly += ' is-matched';
   }
 
+  if (segitsegKartyaIds.includes(kartya.id)) {
+    osztaly += ' is-hinted';
+  }
+
   return osztaly;
 }
 
+function kartyaLathato(kartya) {
+  return kartya.felforditva || kartya.megtalalva || segitsegKartyaIds.includes(kartya.id);
+}
+
 function kartyaKattintas(kartya) {
-  if (zarolva || kartya.felforditva || kartya.megtalalva) {
+  if (zarolva || szunetelve || kartya.felforditva || kartya.megtalalva) {
     return;
   }
 
@@ -165,10 +190,78 @@ function kartyaKattintas(kartya) {
   kartya.felforditva = true;
   felforditottKartyak.push(kartya);
   kartyaMegjelenites();
+  statisztikaFrissites();
 
   if (felforditottKartyak.length === 2) {
     parEllenorzes();
   }
+}
+
+function szunetValtas() {
+  if (!elindult || jatekBefejezve() || zarolva || segitsegKartyaIds.length > 0) {
+    return;
+  }
+
+  szunetelve = !szunetelve;
+
+  if (szunetelve) {
+    idoMegallitas();
+  } else {
+    idoInditas();
+  }
+
+  kartyaMegjelenites();
+  statisztikaFrissites();
+}
+
+function segitsegMutatas() {
+  if (szunetelve || zarolva || felforditottKartyak.length > 0 || segitsegekMaradtak === 0) {
+    return;
+  }
+
+  const segitsegPar = segitsegParKereses();
+
+  if (!segitsegPar) {
+    return;
+  }
+
+  if (!elindult) {
+    idoInditas();
+    elindult = true;
+  }
+
+  segitsegekMaradtak--;
+  segitsegKartyaIds = segitsegPar.map((kartya) => kartya.id);
+  kartyaMegjelenites();
+  statisztikaFrissites();
+
+  segitsegId = setTimeout(() => {
+    segitsegKartyaIds = [];
+    segitsegId = null;
+    kartyaMegjelenites();
+    statisztikaFrissites();
+  }, segitsegIdotartam);
+}
+
+function segitsegParKereses() {
+  const temakSzerint = new Map();
+
+  for (const kartya of kartyak) {
+    if (kartya.megtalalva || kartya.felforditva) {
+      continue;
+    }
+
+    const temaKartyak = temakSzerint.get(kartya.temaId) ?? [];
+    temaKartyak.push(kartya);
+
+    if (temaKartyak.length === 2) {
+      return temaKartyak;
+    }
+
+    temakSzerint.set(kartya.temaId, temaKartyak);
+  }
+
+  return null;
 }
 
 function parEllenorzes() {
@@ -198,13 +291,15 @@ function parEllenorzes() {
     masodikKartya.felforditva = false;
     felforditottKartyak = [];
     zarolva = false;
+    visszaforditasId = null;
     kartyaMegjelenites();
+    statisztikaFrissites();
   }, 750);
 }
 
 function jatekVegeEllenorzes() {
   const nehezseg = nehezsegMezo.value;
-  const parokSzama = nehezsegek[nehezseg].parok;
+  const parokSzama = aktualisParokSzama();
 
   if (talalatok !== parokSzama) {
     return;
@@ -227,14 +322,38 @@ function jatekVegeEllenorzes() {
 
 function statisztikaFrissites() {
   const nehezseg = nehezsegMezo.value;
-  const parokSzama = nehezsegek[nehezseg].parok;
+  const parokSzama = aktualisParokSzama();
   const rekord = rekordBetoltes()[nehezseg];
+  const segitsegAktiv = segitsegKartyaIds.length > 0;
+  const vege = jatekBefejezve();
 
   lepesElem.textContent = lepesek;
   idoElem.textContent = idoFormazas(masodpercek);
   parElem.textContent = `${talalatok} / ${parokSzama}`;
   rekordElem.textContent = rekord ? `${rekord.lepesek} lépés · ${idoFormazas(rekord.masodpercek)}` : 'Nincs';
+  segitsegElem.textContent = `${segitsegekMaradtak} / ${maxSegitsegek}`;
   rekordTorlesGomb.disabled = !rekord;
+  szunetGomb.textContent = szunetelve ? 'Folytatás' : 'Szünet';
+  szunetGomb.disabled = !elindult || vege || zarolva || segitsegAktiv;
+  szunetGomb.setAttribute('aria-pressed', String(szunetelve));
+  segitsegGomb.disabled =
+    szunetelve ||
+    zarolva ||
+    vege ||
+    segitsegAktiv ||
+    felforditottKartyak.length > 0 ||
+    segitsegekMaradtak === 0 ||
+    !segitsegParKereses();
+  szunetFedlap.hidden = !szunetelve;
+  tabla.classList.toggle('is-paused', szunetelve);
+}
+
+function aktualisParokSzama() {
+  return nehezsegek[nehezsegMezo.value].parok;
+}
+
+function jatekBefejezve() {
+  return talalatok === aktualisParokSzama();
 }
 
 function idoInditas() {
@@ -254,6 +373,12 @@ function idoMegallitas() {
 function visszaforditasMegallitas() {
   clearTimeout(visszaforditasId);
   visszaforditasId = null;
+}
+
+function segitsegMegallitas() {
+  clearTimeout(segitsegId);
+  segitsegId = null;
+  segitsegKartyaIds = [];
 }
 
 function rekordBetoltes() {
